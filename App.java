@@ -1,17 +1,24 @@
 package fileexplorer;
 
 import java.awt.BorderLayout;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+
 import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 
@@ -26,11 +33,13 @@ class App extends JFrame {
   
 
     public App() {
+    	
     	panel = new JPanel();
     	this.setTitle("CECS 277 File Manager"); 
     	panel.setLayout(new BorderLayout());
     	
     	////MENU ///
+    	String[] exampleList = { "Jalpaiguri", "Mumbai", "Noida", "Kolkata", "New Delhi" };
     	menubar = new JMenuBar();
     	buildMenu();
     	
@@ -38,25 +47,58 @@ class App extends JFrame {
     	Dimension min = new Dimension(400,400);
     	left = buildFileExplorer();
     	right = buildFileExplorer();
+
+     	JDesktopPane desktop = new JDesktopPane();
+     	JInternalFrame jframe = new JInternalFrame("Internal Frame ",  true, true, true, true);  
+     	  
+  
     	
-    	
-    	JLabel test = new JLabel();
-    	JLabel tests = new JLabel();
-    	JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,left,right);
+    	JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,new JScrollPane(left),new JScrollPane(right));
     	splitPane.setOneTouchExpandable(true);
     	splitPane.setDividerLocation(150);
-        panel.add(splitPane,BorderLayout.CENTER);
-        
-
+    	desktop.add(splitPane);
+        jframe.setBounds(20, 20, 250, 185);  
+        Container c1 = jframe.getContentPane( ) ;  
+        c1.add(splitPane);  
+        desktop.add( jframe );  
+        jframe.setVisible(true);       
+    	JPanel topPanel = buildTopWidgets();
+    	topPanel.add(menubar,BorderLayout.NORTH);
+        panel.add(topPanel,BorderLayout.NORTH);
+        panel.add(desktop,BorderLayout.CENTER);
     }
 
     public void go() {
     	JLabel stats = new JLabel("[MEMORY STATS LABEL]");
+  
         this.add(panel);
         this.setSize(420, 420);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
 		panel.add(stats,BorderLayout.SOUTH);
+    }
+    private String[] getPaths() {
+    	File[] temp = File.listRoots();
+    	String listOfPaths[] = new String[temp.length];
+    	for (int z = 0; z < temp.length; z++){
+    		listOfPaths[z] = temp[z].toString();
+    	}
+    	return listOfPaths;
+    }
+    private JPanel buildTopWidgets() {
+    	String[] exampleList = getPaths();
+    	JComboBox driveLocation = new JComboBox(exampleList);
+
+    	JButton details = new JButton("Details");
+    	JButton simple = new JButton("Simple");
+    	JLabel test = new JLabel("WELP");
+    	JLabel tests = new JLabel("bILLY");
+    	JPanel top = new JPanel();
+    	top.setLayout(new BorderLayout());
+    	top.add(driveLocation,BorderLayout.WEST);
+    	top.add(details,BorderLayout.CENTER);
+    	top.add(simple,BorderLayout.EAST);
+    	return top;
     }
 
     private void buildMenu() {
@@ -76,7 +118,7 @@ class App extends JFrame {
 		menubar.add(tree);
 		menubar.add(help);
 		menubar.add(window);
-		panel.add(menubar,BorderLayout.NORTH);
+		
 
 	}
 //    private JTree buildFileTree() {
