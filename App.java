@@ -7,6 +7,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.lang.Runtime;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -33,8 +34,10 @@ class App extends JFrame {
   
 
     public App() {
-    	
-    	panel = new JPanel();
+	Runtime rgr = Runtime.getRuntime();
+        long usedMB = (rgr.totalMemory() - rgr.freeMemory());
+        String umb = usedMB + "";
+        JLabel stats = new JLabel("Used Memory: " + umb + " MB" );
     	this.setTitle("CECS 277 File Manager"); 
     	panel.setLayout(new BorderLayout());
     	
