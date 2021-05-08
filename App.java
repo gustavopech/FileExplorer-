@@ -25,8 +25,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
-import java.lang.Runtime;
-
 
 class App extends JFrame {
     // Ignore the next line, VSCODE throws a fit without it
@@ -37,9 +35,17 @@ class App extends JFrame {
     JMenuBar menubar;
     JTree left;
     JTree right;
-    JLabel stats;
+    JLabel stats = new JLabel("");
+    String currentDrive;
+    String freeSpace;
+    String usedSpace;
+    String totalSpace;
+    JComboBox<FileNode> driveLocation;
+    JButton simple;
+    JButton details;
 
     public App() {
+    	
     	panel = new JPanel();
     	this.setTitle("CECS 277 File Manager"); 
     	panel.setLayout(new BorderLayout());
@@ -47,12 +53,11 @@ class App extends JFrame {
     	menubar = new JMenuBar();
     	buildMenu();
     	////////////
-    	Dimension min = new Dimension(600,600);
+    	Dimension min = new Dimension(900,900);
 
     	
      	desktop = new JDesktopPane();
-     	FileFrame f = new FileFrame(this);
-     	desktop.add(f);
+
 
       
     	JPanel topPanel = buildTopWidgets();
@@ -66,15 +71,21 @@ class App extends JFrame {
     	}
     	return null;
     }
-
+	public JComboBox<FileNode> getComboBox(){
+		return this.driveLocation;
+	}
     public void go() {
-    	Runtime rgr = Runtime.getRuntime();
-	long usedMB = ((rgr.totalMemory() - rgr.freeMemory())/1000);
-	String umb = usedMB + "";
-	JLabel stats = new JLabel("Total: " + ((rgr.totalMemory())/1000) + "GB" + "      Used Memory: " + umb + " GB" );
+    	for (int  k = 0;k < this.driveLocation.getItemCount(); k++) {
+     		FileFrame f = new FileFrame(this, this.driveLocation.getItemAt(k));
+     		desktop.add(f);
+    	}
+     	
+    	FileNode drive= (FileNode) this.driveLocation.getSelectedItem();
+    	update(drive);
+   
   
         this.add(panel);
-        this.setSize(600, 600);
+        this.setSize(700, 700);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
 		panel.add(stats,BorderLayout.SOUTH);
@@ -91,12 +102,17 @@ class App extends JFrame {
     }
     private JPanel buildTopWidgets() {
     	String[] exampleList = getPaths();
-    	JComboBox driveLocation = new JComboBox(exampleList);
-
-    	JButton details = new JButton("Details");
-    	JButton simple = new JButton("Simple");
-    	JLabel test = new JLabel("WELP");
-    	JLabel tests = new JLabel("bILLY");
+    	FileNode[] exampleList2 = new FileNode[exampleList.length];
+    	for (int z = 0; z < exampleList.length; z++){
+    		File temp = new File(exampleList[z]);
+    		exampleList2[z] = new FileNode(temp);
+    	}
+    	driveLocation = new JComboBox<FileNode>(exampleList2);
+    	driveLocation.addActionListener(new DriveListener());
+    	details = new JButton("Details");
+    	simple = new JButton("Simple");
+    	simple.addActionListener(new simpleAction());
+    	details.addActionListener(new detailAction());
     	JPanel top = new JPanel();
     	top.setLayout(new BorderLayout());
     	top.add(driveLocation,BorderLayout.WEST);
@@ -140,6 +156,36 @@ class App extends JFrame {
 		}
     	
     }
+    public class DriveListener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+	        @SuppressWarnings("unchecked")
+			JComboBox<FileNode> cb = (JComboBox<FileNode>)e.getSource();
+	        FileNode drive= (FileNode) cb.getSelectedItem();
+	        update(drive);
+			
+		}
+    	
+    }
+    public class detailAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			FileFrame f= (FileFrame) desktop.getSelectedFrame();
+			f.detail();
+		}
+    	
+    } 
+    public class simpleAction implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			FileFrame f= (FileFrame) desktop.getSelectedFrame();
+			f.simple();
+		}
+    	
+    } 
     private class AboutActionListener implements ActionListener {
 
 		@Override
@@ -153,16 +199,15 @@ class App extends JFrame {
     
 
 
-	private class okActionListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            if (e.getActionCommand().equals("Okay")) {
-                System.out.println("You pressed Okay!");
-            } else {
-                System.out.println("You pressed Cancel!");
-            }
-        }
-    }
+	public void update(FileNode drive) {
+		this.freeSpace = " " +drive.getFile().getFreeSpace()/1000000000+"GB ";
+		this.totalSpace = " " +drive.getFile().getTotalSpace()/1000000000+"GB ";
+		this.usedSpace = " " + (drive.getFile().getTotalSpace()-drive.getFile().getUsableSpace())/1000000000+"GB ";
+		this.currentDrive = drive.getFile().toString();
+		String result = "Current Drive"+this.currentDrive+
+		" Free Space"+this.freeSpace+"Used Space"+this.usedSpace+ "Total Space"+this.totalSpace;
+		this.stats.setText(result);
+		this.stats.updateUI();
+	}
 	
     }
