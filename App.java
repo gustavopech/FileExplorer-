@@ -25,6 +25,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
+import java.lang.Runtime;
+
 
 class App extends JFrame {
     // Ignore the next line, VSCODE throws a fit without it
@@ -66,7 +68,10 @@ class App extends JFrame {
     }
 
     public void go() {
-    	stats = new JLabel("[MEMORY STATS LABEL]");
+    	Runtime rgr = Runtime.getRuntime();
+	long usedMB = ((rgr.totalMemory() - rgr.freeMemory())/1000);
+	String umb = usedMB + "";
+	JLabel stats = new JLabel("Total: " + ((rgr.totalMemory())/1000) + "GB" + "      Used Memory: " + umb + " GB" );
   
         this.add(panel);
         this.setSize(600, 600);
